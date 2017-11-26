@@ -954,6 +954,18 @@ static void cheevos_free_condition(cheevos_condition_t* condition)
    }
 }
 
+static void cheevos_free_lboard(cheevos_leaderboard_t* lb)
+{
+   free((void*)lb->title);
+   free((void*)lb->description);
+
+   cheevos_free_condition(&lb->start);
+   cheevos_free_condition(&lb->cancel);
+   cheevos_free_condition(&lb->submit);
+
+   free((void*)lb->value.terms);
+}
+
 /*****************************************************************************
 Parse the Mem field of leaderboards.
 *****************************************************************************/
@@ -2269,6 +2281,8 @@ bool cheevos_apply_cheats(bool *data_bool)
 
 bool cheevos_unload(void)
 {
+   unsigned i;
+
    if (!cheevos_loaded)
       return false;
 
@@ -2280,8 +2294,13 @@ bool cheevos_unload(void)
    cheevos_locals.unofficial.cheevos = NULL;
    cheevos_locals.unofficial.count = 0;
 
-   cheevos_loaded = 0;
+   for (i = 0; i < cheevos_locals.lboard_count; i++)
+   {
+      cheevos_free_lboard(&cheevos_locals->leaderboards[i]);
+   }
 
+   free((void*)cheevos_locals->leaderboards);
+   cheevos_loaded = 0;
    return true;
 }
 
